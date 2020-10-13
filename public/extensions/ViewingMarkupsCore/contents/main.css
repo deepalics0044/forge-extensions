@@ -1,0 +1,25 @@
+#box-draw-tool-button {
+    background-image: url(https://github.com/deepalics0044/_GIF/blob/master/_GIF/square.png?raw=true);
+    background-size: 24px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#sphere-draw-tool-button {
+    background-image: url(https://github.com/deepalics0044/_GIF/blob/master/_GIF/circle.png?raw=true);
+    background-size: 24px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+#combo-draw-tool-button {
+    background-image: url(https://github.com/deepalics0044/_GIF/blob/master/_GIF/combo.png?raw=true);
+    background-size: 24px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.toolbarCameraRotation {
+    background-image: url(./img/emblem_camera.png);
+    background-size: 36px;
+    background-repeat: no-repeat;
+    background-position: center;
+}

@@ -15,12 +15,21 @@
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 /////////////////////////////////////////////////////////////////////
-const BoxDrawToolName = 'box-draw-tool';
-const SphereDrawToolName = 'sphere-draw-tool';
-const DrawToolOverlay = 'draw-tool-overlay';
+
+///////////////////////////////////////////////////////////////////////////////
+// TurnTable extension illustrating camera rotation around the model
+// by Denis Grigor, November 2018
+//
+///////////////////////////////////////////////////////////////////////////////
+//const ComboButton = 'combo-draw-tool';
+const BoxDrawToolName1 = 'box-draw-tool';
+const SphereDrawToolName1 = 'sphere-draw-tool';
+const DrawToolOverlay1 = 'draw-tool-overlay';
 
 // Simple viewer tool for drawing boxes and spheres
-class DrawTool extends Autodesk.Viewing.ToolInterface {
+class ViewingMarkups extends Autodesk.Viewing.ToolInterface {
+    
+    
     constructor() {
         super();
 
@@ -37,28 +46,29 @@ class DrawTool extends Autodesk.Viewing.ToolInterface {
         delete this.handleSingleClick;
 
         this.state = ''; // '' (inactive), 'xy' (specifying extent in the XY plane), or 'z' (specifying height)
-        this.names = [BoxDrawToolName, SphereDrawToolName];
+        this.names = [BoxDrawToolName1, SphereDrawToolName1];
     }
 
     register() {
-        console.log('DrawTool registered.');
+        console.log('ViewingMarkups registered.');
     }
 
     deregister() {
-        console.log('DrawTool unregistered.');
+        console.log('ViewingMarkups unregistered.');
     }
 
     activate(name, viewer) {
         this.viewer = viewer;
         this.state = '';
-        this.mode = (name === BoxDrawToolName) ? 'box' : 'sphere';
-        console.log('DrawTool', name, 'activated.');
+        this.mode = (name === BoxDrawToolName1) ? 'box' : 'sphere';
+        console.log('ViewingMarkups', name, 'activated.');
+        
     }
 
     deactivate(name) {
         this.viewer = null;
         this.state = '';
-        console.log('DrawTool', name, 'deactivated.');
+        console.log('ViewingMarkups', name, 'deactivated.');
     }
 
     getPriority() {
@@ -66,19 +76,94 @@ class DrawTool extends Autodesk.Viewing.ToolInterface {
     }
 
     handleButtonDown(event, button) {
+
+
+
         // If left button is pressed and we're not drawing already
         if (button === 0 && this.state === '') {
             // Create new geometry and add it to an overlay
+
+
+
+
+            
             if (this.mode === 'box') {
-                const geometry = new THREE.BufferGeometry().fromGeometry(new THREE.BoxGeometry(1, 1, 1));
-                const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-                this.mesh = new THREE.Mesh(geometry, material);
-            } else {
-                const geometry = new THREE.BufferGeometry().fromGeometry(new THREE.SphereGeometry(0.5, 16, 16));
-                const material = new THREE.MeshPhongMaterial({ color: 0x0000ff });
-                this.mesh = new THREE.Mesh(geometry, material);
-            }
-            this.viewer.impl.addOverlay(DrawToolOverlay, this.mesh);
+               
+               
+               
+                var markup;
+                this.viewer.loadExtension('Autodesk.Viewing.MarkupsCore').then(function(markupsExt){
+                    console.log('ViewingMarkups loaded');
+                  markup = markupsExt;
+
+
+
+
+                  markup.enterEditMode();
+                  var cloud = new Autodesk.Viewing.Extensions.Markups.Core.EditModeCloud(markup)
+                  markup.changeEditMode(cloud)
+
+
+
+
+
+
+
+                }
+                
+                
+                
+                );
+                
+
+
+
+
+
+
+
+
+
+
+               
+                
+      
+            } 
+            
+            
+            
+            
+            else {
+                
+                var markup;
+                this.viewer.loadExtension('Autodesk.Viewing.MarkupsCore').then(function(markupsExt){
+                    console.log('ViewingMarkups loaded');
+                  markup = markupsExt;
+
+
+
+
+                  markup.enterEditMode();
+                  var circle = new Autodesk.Viewing.Extensions.Markups.Core.EditModeArrow(markup)
+                  markup.changeEditMode(circle)
+
+
+
+
+
+
+
+                }
+                
+                
+                
+                );
+                
+
+            } 
+            
+            
+                   this.viewer.impl.addOverlay(DrawToolOverlay, this.mesh);
 
             // Initialize the 3 values that will control the geometry's size (1st corner in the XY plane, 2nd corner in the XY plane, and height)
             this.corner1 = this.corner2 = this._intersect(event.clientX, event.clientY);
@@ -90,7 +175,7 @@ class DrawTool extends Autodesk.Viewing.ToolInterface {
         // Otherwise let another tool handle the event, and make note that our tool is now bypassed
         this.bypassed = true;
         return false;
-    }
+        }
 
     handleButtonUp(event, button) {
         // If left button is released and we're drawing in the XY plane
@@ -149,27 +234,30 @@ class DrawTool extends Autodesk.Viewing.ToolInterface {
         mesh.scale.z = height;
         this.viewer.impl.invalidate(true, true, true);
     }
-}
 
-class DrawToolExtension extends Autodesk.Viewing.Extension {
+
+}
+class ViewingMarkupsCore extends Autodesk.Viewing.Extension {
     constructor(viewer, options) {
         super(viewer, options);
-        this.tool = new DrawTool();
+        this.tool = new ViewingMarkups();
     }
 
     load() {
         this.viewer.toolController.registerTool(this.tool);
-        this.viewer.impl.createOverlayScene(DrawToolOverlay);
+        this.viewer.impl.createOverlayScene(DrawToolOverlay1);
         this._createUI();
-        console.log('DrawToolExtension loaded.');
+        
+
+        console.log('ViewingMarkupsCore loaded.');
         return true;
     }
 
     unload() {
         this.viewer.toolController.deregisterTool(this.tool);
-        this.viewer.impl.removeOverlayScene(DrawToolOverlay);
+        this.viewer.impl.removeOverlayScene(DrawToolOverlay1);
         this._removeUI();
-        console.log('DrawToolExtension unloaded.');
+        console.log('ViewingMarkupsCore unloaded.');
         return true;
     }
 
@@ -179,46 +267,51 @@ class DrawToolExtension extends Autodesk.Viewing.Extension {
 
     _createUI() {
         const toolbar = this.viewer.toolbar;
-
-        this.comboButton = new Autodesk.Viewing.UI.ComboButton('combo-draw-tool-button');
-        comboButton.setToolTip('buildings');
-
-
-
-
         if (toolbar && !this.group) {
             const controller = this.viewer.toolController;
+
+
+            this.comboButton = new Autodesk.Viewing.UI.ComboButton('combo-draw-tool-button ');
+            this.comboButton.setToolTip('combo-draw-tool-button ');
+
+
+
+
+
             this.button1 = new Autodesk.Viewing.UI.Button('box-draw-tool-button');
             this.button1.onClick = (ev) => {
-                if (controller.isToolActivated(BoxDrawToolName)) {
-                    controller.deactivateTool(BoxDrawToolName);
+                if (controller.isToolActivated(BoxDrawToolName1)) {
+                    controller.deactivateTool(BoxDrawToolName1);
                     this.button1.setState(Autodesk.Viewing.UI.Button.State.INACTIVE);
                 } else {
-                    controller.deactivateTool(SphereDrawToolName);
-                    controller.activateTool(BoxDrawToolName);
+                    controller.deactivateTool(SphereDrawToolName1);
+                    controller.activateTool(BoxDrawToolName1);
                     this.button2.setState(Autodesk.Viewing.UI.Button.State.INACTIVE);
                     this.button1.setState(Autodesk.Viewing.UI.Button.State.ACTIVE);
                 }
             };
-            this.button1.setToolTip('Box Draw Tool');
+            this.button1.setToolTip('Rectangle Draw Tool');
+            this.comboButton.addControl(this.button1);
 
             this.button2 = new Autodesk.Viewing.UI.Button('sphere-draw-tool-button');
             this.button2.onClick = (ev) => {
-                if (controller.isToolActivated(SphereDrawToolName)) {
-                    controller.deactivateTool(SphereDrawToolName);
+                if (controller.isToolActivated(SphereDrawToolName1)) {
+                    controller.deactivateTool(SphereDrawToolName1);
                     this.button2.setState(Autodesk.Viewing.UI.Button.State.INACTIVE);
                 } else {
-                    controller.deactivateTool(BoxDrawToolName);
-                    controller.activateTool(SphereDrawToolName);
+                    controller.deactivateTool(BoxDrawToolName1);
+                    controller.activateTool(SphereDrawToolName1);
                     this.button1.setState(Autodesk.Viewing.UI.Button.State.INACTIVE);
                     this.button2.setState(Autodesk.Viewing.UI.Button.State.ACTIVE);
                 }
             };
-            this.button2.setToolTip('Sphere Draw Tool');
+            this.button2.setToolTip('Circle Draw Tool');
+            this.comboButton.addControl(this.button2);
 
-            this.group = new Autodesk.Viewing.UI.ControlGroup('draw-tool-group');
-            this.group.addControl(this.button1);
-            this.group.addControl(this.button2);
+            
+
+           this.group = new Autodesk.Viewing.UI.ControlGroup('draw-tool-group');
+            this.group.addControl(this.comboButton);
             toolbar.addControl(this.group);
         }
     }
@@ -229,6 +322,9 @@ class DrawToolExtension extends Autodesk.Viewing.Extension {
             this.group = null;
         }
     }
+
+
+   
 }
 
-Autodesk.Viewing.theExtensionManager.registerExtension('DrawToolExtension', DrawToolExtension);
+Autodesk.Viewing.theExtensionManager.registerExtension('ViewingMarkupsCore', ViewingMarkupsCore);
